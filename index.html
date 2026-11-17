@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Agent 学习路线 · 交互面板</title>
+<style>
+:root{
+  --bg:#f6f8fc; --surface:#ffffff; --border:#e3e8ef; --text:#1f2937; --muted:#64748b;
+  --blue:#185fa5; --blue-50:#e6f1fb; --blue-100:#b5d4f4; --blue-800:#0c447c;
+  --amber:#ba7517; --amber-50:#faeeda; --amber-100:#fac775; --amber-800:#633806;
+  --teal:#0f6e56; --teal-50:#e1f5ee; --purple:#534ab7; --purple-50:#eeedfe;
+  --green:#3b6d11; --green-50:#eaf3de;
+  --radius:12px; --shadow:0 1px 3px rgba(15,23,42,.05),0 6px 20px rgba(15,23,42,.04);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Microsoft YaHei","PingFang SC",sans-serif;font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased}
+body.no-scroll{overflow:hidden}
+button{font-family:inherit;font-size:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.wrap{max-width:1460px;margin:0 auto;padding:0 24px}
+
+.topbar{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.97);border-bottom:1px solid var(--border)}
+.topbar-in{display:flex;align-items:center;gap:20px;min-height:64px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand-mark{width:30px;height:30px;border-radius:9px;background:var(--blue-50);border:1px solid var(--blue-100);display:grid;place-items:center;color:var(--blue-800);font-weight:500;font-size:14px}
+.brand-t{font-size:15px;font-weight:500;letter-spacing:.2px}
+.brand-s{font-size:12px;color:var(--muted);margin-top:-3px}
+.tabs{display:flex;gap:4px;background:#f1f4f9;padding:4px;border-radius:10px}
+.tab{border:0;background:transparent;color:var(--muted);padding:6px 14px;border-radius:7px;font-size:13px}
+.tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(15,23,42,.1);font-weight:500}
+.btn{border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:9px;padding:7px 13px;font-size:13px;white-space:nowrap}
+.btn:hover{border-color:var(--blue-100);background:var(--blue-50)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{background:var(--blue-800)}
+.btn.small{padding:4px 10px;font-size:12px}
+.btn.ghost{background:transparent}
+.top-actions{display:flex;gap:8px;align-items:center}
+
+.hero{padding:22px 0 6px}
+.hero h1{font-size:21px;font-weight:500;margin:0 0 4px}
+.hero p{margin:0;color:var(--muted);font-size:13px}
+.progress-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin:14px 0 20px;box-shadow:var(--shadow)}
+.progress-top{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.progress-num{font-size:19px;font-weight:500;color:var(--blue-800)}
+.progress-label{font-size:13px;color:var(--muted)}
+.progress-right{margin-left:auto;font-size:12px;color:var(--muted)}
+.bar{height:8px;background:#edf1f7;border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;background:var(--blue);border-radius:99px;transition:width .25s ease}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 430px;gap:20px;align-items:start;padding-bottom:40px}
+.segment{margin-bottom:22px}
+.seg-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.seg-dot{width:9px;height:9px;border-radius:3px;flex:none}
+.seg-name{font-size:14px;font-weight:500}
+.seg-sub{font-size:12px;color:var(--muted)}
+.seg-weeks{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stage-card{position:relative;display:flex;flex-direction:column;gap:5px;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;min-height:118px;transition:transform .12s,border-color .12s,box-shadow .12s}
+.stage-card:hover{transform:translateY(-2px);border-color:var(--blue-100);box-shadow:var(--shadow)}
+.stage-card.active{border-color:var(--blue);box-shadow:0 0 0 2px rgba(24,95,165,.12)}
+.stage-card.active::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:0 3px 3px 0;background:var(--blue)}
+.stage-card.done{background:#fbfdf9}
+.card-top{display:flex;align-items:center;gap:8px}
+.card-num{width:22px;height:22px;border-radius:7px;background:var(--blue-50);color:var(--blue-800);display:grid;place-items:center;font-size:12px;font-weight:500;flex:none}
+.stage-card.core .card-num{background:var(--amber-50);color:var(--amber-800)}
+.card-weeks{font-size:11px;color:var(--muted)}
+.card-badge{margin-left:auto;font-size:11px;color:var(--amber-800);background:var(--amber-50);border:1px solid var(--amber-100);border-radius:99px;padding:1px 8px}
+.card-flag{margin-left:auto;font-size:11px;color:var(--green);background:var(--green-50);border-radius:99px;padding:1px 8px}
+.card-title{font-size:14px;font-weight:500;line-height:1.4}
+.card-sub{font-size:12px;color:var(--muted);line-height:1.5}
+.card-foot{margin-top:auto;padding-top:5px;font-size:11px;color:var(--blue-800)}
+
+.detail{position:sticky;top:80px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);max-height:calc(100vh - 100px);display:flex;flex-direction:column;overflow:hidden}
+.detail-scroll{overflow-y:auto;padding:20px 22px 24px}
+.back{display:none;border:0;background:transparent;color:var(--blue);padding:0 0 10px;font-size:13px}
+.kicker{font-size:12px;color:var(--blue-800);background:var(--blue-50);display:inline-block;padding:2px 10px;border-radius:99px}
+.detail h2{font-size:19px;font-weight:500;margin:10px 0 6px}
+.goal{margin:0 0 14px;color:var(--muted);font-size:13px;line-height:1.7}
+.detail-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.sec{margin-top:20px}
+.sec h3{font-size:13px;font-weight:500;margin:0 0 9px;display:flex;align-items:center;gap:7px}
+.sec h3::before{content:"";width:3px;height:13px;border-radius:2px;background:var(--blue)}
+.sec.warn h3::before{background:var(--amber)}
+.sec.ok h3::before{background:var(--teal)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;background:#f1f5fa;border:1px solid #e7edf5;color:#334155;border-radius:7px;padding:3px 9px}
+.code-row{display:flex;align-items:center;gap:8px;background:#f5f7fa;border:1px solid #e9eef4;border-radius:8px;padding:7px 9px;margin-bottom:6px}
+.code-txt{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;color:#334155;word-break:break-all;flex:1}
+.copy{border:1px solid var(--border);background:#fff;border-radius:6px;font-size:11px;color:var(--muted);padding:2px 7px;flex:none}
+.copy:hover{color:var(--blue);border-color:var(--blue-100)}
+.task-list{list-style:none;padding:0;margin:0}
+.task-list li{display:flex;gap:9px;align-items:flex-start;padding:6px 0;border-bottom:1px dashed #edf1f6;font-size:13px;line-height:1.6}
+.task-list li:last-child{border-bottom:0}
+.task-list input{margin:5px 0 0;width:15px;height:15px;flex:none;accent-color:var(--blue);cursor:pointer}
+.task-list label{cursor:pointer;flex:1}
+.task-list li.checked label{color:var(--muted);text-decoration:line-through;text-decoration-color:#cbd5e1}
+.warn-list{margin:0;padding-left:18px;font-size:13px;color:#475569}
+.warn-list li{margin:4px 0}
+.detail-nav{display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--border);padding:12px 22px;background:#fcfdff}
+.detail-nav .btn{flex:1;text-align:center}
+.hint{font-size:12px;color:var(--muted);text-align:center;padding:10px 0 0}
+
+.panel{display:none;padding-bottom:48px}
+.panel.show{display:block}
+.panel-head{margin:22px 0 14px}
+.panel-head h2{font-size:19px;font-weight:500;margin:0 0 4px}
+.panel-head p{margin:0;color:var(--muted);font-size:13px}
+.m-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.m-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);text-align:left;display:flex;flex-direction:column;gap:6px}
+.m-card:hover{border-color:var(--blue-100);transform:translateY(-2px)}
+.m-tag{font-size:12px;font-weight:500;color:var(--blue-800);background:var(--blue-50);border-radius:7px;padding:2px 9px;align-self:flex-start}
+.m-card:nth-child(n+5) .m-tag{color:var(--amber-800);background:var(--amber-50)}
+.m-title{font-size:15px;font-weight:500}
+.m-ability{font-size:13px;color:var(--muted);flex:1}
+.m-foot{font-size:11px;color:var(--blue);border-top:1px solid #eef2f7;padding-top:8px;margin-top:4px}
+.info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.info-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow)}
+.info-card h3{font-size:14px;font-weight:500;margin:0 0 10px}
+.info-card ul,.info-card ol{margin:0;padding-left:19px;font-size:13px;color:#475569}
+.info-card li{margin:6px 0}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+th{color:var(--muted);font-weight:500;background:#fafbfe}
+.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2937;color:#fff;font-size:13px;padding:9px 18px;border-radius:9px;opacity:0;pointer-events:none;transition:.2s;z-index:80}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+kbd{font-family:ui-monospace,monospace;font-size:11px;background:#f1f4f9;border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;padding:1px 5px}
+
+@media(max-width:1080px){
+  .layout{grid-template-columns:minmax(0,1fr) 380px}
+  .m-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:900px){
+  .wrap{padding:0 16px}
+  .layout{grid-template-columns:1fr}
+  .detail{position:fixed;inset:0;z-index:60;border-radius:0;border:0;max-height:none;transform:translateX(100%);transition:transform .22s ease;box-shadow:none}
+  .detail.open{transform:translateX(0)}
+  .detail-scroll{padding:18px 18px 30px}
+  .back{display:block}
+  .detail-nav{padding:12px 18px}
+  .topbar-in{gap:10px}
+  .brand{width:100%;margin-right:0}
+  .info-grid{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .cards{grid-template-columns:1fr}
+  .m-grid{grid-template-columns:1fr}
+  .tabs{width:100%;justify-content:space-between}
+  .tab{flex:1;padding:6px 8px}
+  .top-actions{width:100%}
+  .top-actions .btn{flex:1;text-align:center}
+  .seg-weeks{display:none}
+}
+.lib-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:16px;align-items:start}
+.lib-side,.lib-viewer,.pg-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.lib-side{padding:14px;max-height:calc(100vh - 210px);overflow-y:auto}
+.lib-search-row{margin-bottom:12px}
+.lib-search{width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;background:#fbfcfe}
+.lib-search:focus{border-color:var(--blue);outline:none}
+.lib-meta{font-size:11px;color:var(--muted);margin-top:7px;line-height:1.5}
+.lib-group{margin-bottom:14px}
+.lib-group-t{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);padding:5px 4px;border-bottom:1px solid var(--border);margin-bottom:4px}
+.lib-group-t span{margin-left:auto;background:#f1f4f9;border-radius:99px;padding:0 6px;font-size:11px}
+.lib-item{display:flex;align-items:center;gap:9px;width:100%;text-align:left;border:1px solid transparent;background:transparent;border-radius:8px;padding:7px 8px;color:var(--text)}
+.lib-item:hover{background:#f5f8fd}
+.lib-item.active{background:var(--blue-50);border-color:var(--blue-100)}
+.lib-icon{font-family:ui-monospace,monospace;font-size:10px;color:var(--blue-800);background:var(--blue-50);border:1px solid var(--blue-100);border-radius:5px;padding:2px 4px;flex:none}
+.lib-item-main{display:flex;flex-direction:column;min-width:0;flex:1}
+.lib-item-name{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lib-item-sub{font-size:11px;color:var(--muted)}
+.lib-stage{font-size:10px;color:var(--amber-800);background:var(--amber-50);border-radius:99px;padding:1px 6px;flex:none}
+.lib-empty,.lib-placeholder{padding:18px;font-size:13px;color:var(--muted);line-height:1.7}
+.ph-title{font-size:15px;color:var(--text);font-weight:500;margin-bottom:6px}
+.lib-viewer{padding:0;overflow:hidden;min-height:320px}
+.viewer-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid var(--border)}
+.viewer-title{display:flex;align-items:center;gap:9px;margin-right:auto}
+.viewer-title .mono{font-size:12px}
+.viewer-sub{font-size:11px;color:var(--muted)}
+.viewer-actions{display:flex;gap:6px;flex-wrap:wrap}
+.viewer-actions .btn{text-decoration:none;display:inline-flex;align-items:center}
+.code-view{padding:12px 0;max-height:calc(100vh - 300px);overflow:auto;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;line-height:1.6}
+.cl{display:flex;word-break:break-word}
+.cl:hover{background:#f7faff}
+.ln{width:48px;flex:none;text-align:right;padding-right:12px;color:#a3b0c2;user-select:none}
+.ct{flex:1;padding-right:14px;white-space:pre-wrap}
+.viewer-foot{padding:9px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);word-break:break-all}
+.lib-links{margin-top:20px}
+.links-title{font-size:14px;font-weight:500;margin-bottom:10px}
+.links-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.link-card{display:flex;flex-direction:column;gap:3px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--text)}
+.link-card:hover{border-color:var(--blue-100);background:var(--blue-50)}
+.link-title{font-size:13px;font-weight:500;color:var(--blue-800)}
+.link-note{font-size:11px;color:var(--muted)}
+.links-foot{font-size:11px;color:var(--muted);margin-top:8px}
+.pg-card{padding:16px}
+.pg-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.pg-label{font-size:13px;display:flex;align-items:center;gap:7px;color:var(--muted)}
+.pg-select{border:1px solid var(--border);border-radius:8px;padding:6px 9px;font-size:13px;font-family:inherit;background:#fff;color:var(--text);min-width:230px}
+.pg-status{margin-left:auto;font-size:12px;color:var(--green);background:var(--green-50);border-radius:99px;padding:2px 10px}
+.pg-editor{width:100%;min-height:440px;resize:vertical;border:1px solid var(--border);border-radius:9px;padding:14px 16px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;line-height:1.65;color:var(--text);background:#fbfcfe;tab-size:4}
+.pg-editor:focus{border-color:var(--blue);outline:none;background:#fff}
+.pg-foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted);padding-top:9px}
+@media(max-width:900px){
+  .lib-layout{grid-template-columns:1fr}
+  .lib-side{max-height:none}
+  .links-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .code-view{max-height:60vh}
+}
+@media(max-width:560px){
+  .links-grid{grid-template-columns:1fr}
+  .pg-select{min-width:0;width:100%}
+  .pg-status{margin-left:0}
+}
+.start-banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--amber-50);border:1px solid var(--amber-100);border-radius:10px;padding:10px 14px;margin:12px 0 18px;font-size:13px}
+.start-banner b{color:var(--amber-800)}
+.start-banner .btn{margin-left:auto}
+.bg-hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin:20px 0 16px;box-shadow:var(--shadow)}
+.bg-hero h2{font-size:20px;font-weight:500;margin:0 0 6px}
+.bg-hero p{margin:0;color:var(--muted);font-size:13px;line-height:1.7}
+.bg-hero .pill{display:inline-block;background:var(--amber-50);color:var(--amber-800);border:1px solid var(--amber-100);border-radius:99px;padding:2px 10px;font-size:12px;margin-bottom:10px}
+.bg-layout{display:grid;grid-template-columns:210px minmax(0,1fr);gap:18px;align-items:start;padding-bottom:40px}
+.bg-nav{position:sticky;top:80px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px;box-shadow:var(--shadow)}
+.bg-nav-t{font-size:11px;color:var(--muted);padding:4px 8px 8px}
+.bg-nav button{display:block;width:100%;text-align:left;border:0;background:transparent;border-radius:7px;padding:7px 9px;font-size:12px;color:var(--text)}
+.bg-nav button:hover{background:#f3f7fd}
+.bg-nav button.active{background:var(--blue-50);color:var(--blue-800);font-weight:500}
+.bg-sec{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px 24px;margin-bottom:16px;box-shadow:var(--shadow);scroll-margin-top:84px}
+.bg-sec h2{font-size:17px;font-weight:500;margin:0 0 12px}
+.bg-sec h3{font-size:14px;font-weight:500;margin:22px 0 10px}
+.bg-sec p{font-size:13px;line-height:1.8;margin:9px 0;color:#334155}
+.lead{font-size:13px;color:var(--muted);border-bottom:1px dashed var(--border);padding-bottom:10px;margin-bottom:14px}
+.key{background:var(--blue-50);border-left:4px solid var(--blue);border-radius:0 8px 8px 0;padding:12px 16px;font-size:14px;line-height:1.8;color:var(--blue-800);margin:12px 0}
+.whybox{background:var(--amber-50);border-left:4px solid var(--amber);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;line-height:1.7;color:var(--amber-800);margin:12px 0}
+.analogy{background:#f7f9fc;border:1px dashed var(--border);border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.8;color:#475569;margin:12px 0}
+.bg-table{width:100%;border-collapse:collapse;font-size:12.5px;margin:12px 0}
+.bg-table th,.bg-table td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top;line-height:1.6}
+.bg-table th{background:#f7f9fc;color:var(--muted);font-weight:500}
+.bg-table code,.bg-sec code{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:#f1f4f9;border-radius:4px;padding:1px 5px;color:var(--blue-800)}
+.tag{display:inline-block;font-size:11px;border-radius:99px;padding:1px 9px;margin-right:4px}
+.tag.knowledge{background:var(--blue-50);color:var(--blue-800);border:1px solid var(--blue-100)}
+.tag.code{background:#f1f4f9;color:var(--muted);border:1px solid var(--border)}
+.part-card,.layer{border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin:12px 0;background:#fdfefe}
+.layer.hot{border-color:var(--amber-100);background:#fffdf8}
+.part-head{display:flex;align-items:center;gap:9px;font-size:15px;margin-bottom:8px}
+.part-num{width:24px;height:24px;border-radius:7px;background:var(--blue-50);color:var(--blue-800);display:grid;place-items:center;font-size:12px;font-weight:500}
+.fileline{border-top:1px dashed var(--border);padding-top:9px;margin-top:12px!important}
+.layer-t{font-size:14px;font-weight:500;margin-bottom:6px}
+.layer-t span{font-size:11px;color:var(--muted);font-weight:400;margin-left:6px}
+.layer.hot .layer-t{color:var(--amber-800)}
+.step{display:flex;gap:11px;align-items:flex-start;font-size:13px;line-height:1.7;margin:8px 0}
+.step b{width:22px;height:22px;flex:none;border-radius:7px;background:var(--blue-50);color:var(--blue-800);display:grid;place-items:center;font-size:12px}
+.end-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+@media(max-width:900px){
+  .bg-layout{grid-template-columns:1fr}
+  .bg-nav{position:static;display:flex;gap:6px;overflow-x:auto;padding:8px}
+  .bg-nav-t{display:none}
+  .bg-nav button{white-space:nowrap;width:auto;flex:none}
+  .bg-sec{padding:18px 16px}
+  .bg-table{font-size:12px}
+}
+.plain-box{background:var(--blue-50);border:1px solid var(--blue-100);border-radius:9px;padding:12px 14px;margin:0 0 14px;font-size:13px;line-height:1.75}
+.plain-t{font-size:12px;color:var(--blue-800);font-weight:500;margin-bottom:5px}
+.plain-box p{margin:5px 0;color:#334155}
+.plain-why{color:var(--amber-800)!important;border-top:1px dashed var(--blue-100);padding-top:7px;margin-top:9px!important}
+.plain-box .btn{margin-top:9px}
+@media print{
+  .topbar,.detail-nav,.top-actions,.copy,.btn{display:none!important}
+  .detail{position:static;max-height:none;box-shadow:none;border:0}
+  .detail-scroll{overflow:visible}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <div class="brand">
+      <div class="brand-mark">A</div>
+      <div>
+        <div class="brand-t">AI Agent 学习路线</div>
+        <div class="brand-s">D:\AIagent\agent-lab · 四段十阶 · 14 周</div>
+      </div>
+    </div>
+    <nav class="tabs" aria-label="视图切换">
+      <button class="tab active" data-view="beginner">先读这里</button>
+      <button class="tab" data-view="roadmap">学习路线</button>
+      <button class="tab" data-view="milestones">里程碑项目</button>
+      <button class="tab" data-view="guide">使用指南</button>
+      <button class="tab" data-view="library">资料库</button>
+      <button class="tab" data-view="playground">练习台</button>
+    </nav>
+    <div class="top-actions">
+      <button class="btn primary" id="continueBtn">继续学习</button>
+      <button class="btn ghost small" id="resetBtn" title="清空所有勾选记录">重置进度</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="hero">
+    <h1>先弄懂 Agent 是什么，再看要学什么</h1>
+    <p>完全零基础也能用 · 默认打开的就是白话讲解 · 内容、代码、练习都分得清清楚楚</p>
+  </section>
+
+  <div class="start-banner" id="startBanner">
+    <span><b>第一次来？</b> 先读「先读这里」：Agent 是什么 / 我为什么要装这些 / 每个文件为什么存在。</span>
+    <button class="btn primary small" data-beginner-go="beginner">打开讲解</button>
+  </div>
+
+  <section class="progress-card" aria-label="学习进度">
+    <div class="progress-top">
+      <span class="progress-num" id="doneCount">0 / 10</span>
+      <span class="progress-label">个阶段已完成</span>
+      <span class="progress-right" id="taskCount">0 / 0 项任务与检查点</span>
+    </div>
+    <div class="bar"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
+  </section>
+
+  <main class="panel show" id="view-beginner">
+    <div class="bg-hero">
+      <span class="pill">给一无所知的你 · 先读这一页</span>
+      <h2>Agent 到底是什么？我为什么要装这些？这些文件为什么存在？</h2>
+      <p>下面全部用大白话讲，重点已经标出来。<b>代码只是例子，真正要学的是里面的道理。</b>遇到不懂的词，随时点左边「黑话小词典」。</p>
+    </div>
+    <div class="bg-layout">
+      <nav class="bg-nav" id="bgNav" aria-label="讲解目录"></nav>
+      <div id="bgContent"></div>
+    </div>
+  </main>
+
+  <main class="layout" id="view-roadmap" style="display:none">
+    <div id="roadmapList"></div>
+    <aside class="detail" id="detail" aria-label="阶段详情"></aside>
+  </main>
+
+  <main class="panel" id="view-milestones">
+    <div class="panel-head">
+      <h2>同一个项目，六次长大</h2>
+      <p>不要每章新建一个 demo。每完成一个阶段，只改同一个项目，并在 Git 里打一个 tag。点卡片可跳到对应阶段。</p>
+    </div>
+    <div class="m-grid" id="milestoneList"></div>
+  </main>
+
+  <main class="panel" id="view-guide">
+    <div class="panel-head">
+      <h2>怎么用这份路线</h2>
+      <p>节奏、自检、排错与环境说明，都集中在这里。</p>
+    </div>
+    <div class="info-grid">
+      <section class="info-card">
+        <h3>每周节奏模板（按 8 小时）</h3>
+        <table>
+          <tr><th>时间</th><th>做什么</th></tr>
+          <tr><td>2h</td><td>读概念 + 官方文档相关章节</td></tr>
+          <tr><td>3h</td><td>跑 examples 示例，然后改它</td></tr>
+          <tr><td>2h</td><td>完成动手任务，记录报错与解法</td></tr>
+          <tr><td>1h</td><td>复盘 + 写笔记</td></tr>
+        </table>
+        <p style="font-size:12px;color:var(--muted);margin:10px 0 0">笔记建议沿用 Obsidian 习惯：一课一页，固定四栏「概念 / 关键代码 / 踩坑 / 还没懂的问题」，用双链串起概念。</p>
+      </section>
+      <section class="info-card">
+        <h3>检查点：怎么算真的学会</h3>
+        <ul>
+          <li>能对别人讲清一次 Agent 循环，不用翻代码</li>
+          <li>能不看文档手写最小可用 Agent</li>
+          <li>拿到新需求，能判断该改 prompt、加工具、换编排，还是上 RAG</li>
+          <li>出 bug 能定位到「模型 / prompt / 工具 / 状态 / 检索」哪一层</li>
+          <li>能用评估数据证明改进有效，而不是凭感觉</li>
+        </ul>
+      </section>
+      <section class="info-card">
+        <h3>卡住时的分层定位法</h3>
+        <ol>
+          <li>环境问题 → 跑 <span class="mono">python check_env.py</span></li>
+          <li>换 MockLLM 复现 → 正常则是模型 / 格式问题</li>
+          <li>打印每轮 prompt → 看记忆有没有拼对</li>
+          <li>单独测工具函数 → 排除工具实现</li>
+          <li>最后才怀疑框架</li>
+        </ol>
+      </section>
+      <section class="info-card">
+        <h3>明确先不做的事</h3>
+        <ul>
+          <li>不微调模型、不训练 embedding</li>
+          <li>不追新框架，别背 API</li>
+          <li>不一上来就多智能体</li>
+          <li>不跳过手写 Agent 阶段</li>
+        </ul>
+      </section>
+      <section class="info-card">
+        <h3>环境与命令</h3>
+        <table>
+          <tr><th>用途</th><th>命令</th></tr>
+          <tr><td>自检</td><td class="mono">python check_env.py</td></tr>
+          <tr><td>手写 Agent</td><td class="mono">python examples/01_react_from_scratch.py</td></tr>
+          <tr><td>假端点</td><td class="mono">python examples/mock_api_server.py</td></tr>
+          <tr><td>Notebook</td><td class="mono">jupyter lab</td></tr>
+        </table>
+        <p style="font-size:12px;color:var(--muted);margin:10px 0 0">PowerShell 用 <span class="mono">.\.venv\Scripts\python.exe</span>；Git Bash 先 <span class="mono">source .venv/Scripts/activate</span>。模型配置复制 <span class="mono">.env.example</span> 为 <span class="mono">.env</span>。</p>
+      </section>
+      <section class="info-card">
+        <h3>本环境的三个版本坑</h3>
+        <ul>
+          <li><b>mcp 2.x</b>：FastMCP 已改名 MCPServer（mcp.server.mcpserver）</li>
+          <li><b>LangChain 1.x</b>：initialize_agent 已移除，用 langchain.agents.create_agent</li>
+          <li><b>ChatOpenAI</b>：需 use_responses_api=False 才走 /chat/completions</li>
+        </ul>
+        <p style="font-size:12px;color:var(--muted);margin:10px 0 0">资源以官方文档为准：OpenAI 兼容协议、LangGraph、MCP(modelcontextprotocol.io)、ChromaDB、Ollama。完整文字版见 <span class="mono">LEARNING_PATH.md</span>。</p>
+      </section>
+    </div>
+  </main>
+
+  <main class="panel" id="view-library">
+    <div class="panel-head">
+      <h2>资料库 · 点开就读</h2>
+      <p>项目里的文档、课程代码、Notebook 和运行日志内容都已打包进网页，离线可读。可按文件名或正文搜索，点文件即显示全文。</p>
+    </div>
+    <div class="lib-layout">
+      <aside class="lib-side" id="libTree"></aside>
+      <section class="lib-viewer" id="libViewer"></section>
+    </div>
+    <div class="lib-links" id="libLinks"></div>
+  </main>
+
+  <main class="panel" id="view-playground">
+    <div class="panel-head">
+      <h2>练习台 · 点开就写</h2>
+      <p>按阶段分开存草稿，输入即自动保存在本机浏览器。写好后下载到项目目录用终端运行，也能导入任意本地 .py / .md 文件继续编辑。</p>
+    </div>
+    <div class="pg-card">
+      <div class="pg-bar">
+        <label class="pg-label">练习阶段<select id="pgStage" class="pg-select"></select></label>
+        <span class="pg-status" id="pgStatus">草稿自动保存</span>
+      </div>
+      <div class="pg-bar">
+        <button class="btn small" id="pgTemplate">载入本阶段练习模板</button>
+        <button class="btn small" id="pgImport">导入本地文件…</button>
+        <input type="file" id="pgFile" hidden accept=".py,.md,.txt,.json,.js,.log">
+        <button class="btn small" id="pgCopy">复制</button>
+        <button class="btn small" id="pgDownloadPy">下载 .py</button>
+        <button class="btn small" id="pgDownloadMd">下载 .md</button>
+        <button class="btn small ghost" id="pgClear">清空</button>
+      </div>
+      <textarea id="pgEditor" class="pg-editor" spellcheck="false" placeholder="在这里写代码或笔记…"></textarea>
+      <div class="pg-foot"><span id="pgCount">0 行 · 0 字符</span><span>浏览器不能直接运行 Python，下载后用 python 文件名.py 执行</span></div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+"use strict";
+
+const SEGMENTS = [
+  {name:"一、地基", sub:"先能读懂代码、理解模型", weeks:"第 1–3 周", color:"var(--blue)"},
+  {name:"二、内核", sub:"不用框架，从零写出 Agent", weeks:"第 4–8 周", color:"var(--amber)"},
+  {name:"三、能力", sub:"让 Agent 有知识、有工具", weeks:"第 9–12 周", color:"var(--teal)"},
+  {name:"四、工程", sub:"能评估、够安全、可交付", weeks:"第 13–14 周", color:"var(--purple)"}
+];
+
+const STAGES = [
+  {
+    id:0, seg:0, title:"前置能力补齐", weeks:"第 1–2 周", sub:"Python / HTTP / Git，够读代码就够", milestone:"M0", core:false,
+    goal:"读懂本仓库任意一行示例代码，遇到报错知道往哪查。",
+    concepts:["函数与参数","类与对象","装饰器","类型注解","dataclass","异常与 with","json 模块","async/await 直觉","venv 与 pip","环境变量","HTTP 与 JSON","Git 基础"],
+    files:["check_env.py","examples/llm.py","examples/00_hello_llm.py"],
+    cmds:["python check_env.py"],
+    tasks:[
+      "用 httpx 请求 mock_api_server.py 的 /v1/chat/completions，手工拼 JSON 并打印响应",
+      "给 01_react_from_scratch.py 的 run_tool 写一个装饰器，打印工具名、参数与耗时",
+      "建一个 Git 仓库，把 .env 与 __pycache__ 加进 .gitignore"
+    ],
+    checks:[
+      "能逐行解释 01_react_from_scratch.py",
+      "能自己写出一个带参数的装饰器",
+      "能说清 async def 为什么在 Agent 里常见"
+    ],
+    pitfalls:["不用学完整个 Python 才开始，够读代码就往下走，遇缺口再回来补",".env 绝不能提交到 Git"]
+  },
+  {
+    id:1, seg:0, title:"LLM 心智模型", weeks:"第 3 周", sub:"一次调用到底发生了什么", milestone:"—", core:false,
+    goal:"解释一次调用发生了什么，以及模型为什么会「忘事」、为什么会胡说。",
+    concepts:["token 与分词","上下文窗口","消息角色 system/user/assistant/tool","temperature 与确定性","流式输出","幻觉","API 是无状态的","结构化输出","token 成本","上下文工程"],
+    files:["examples/00_hello_llm.py","examples/mock_api_server.py"],
+    cmds:["python examples/mock_api_server.py","python examples/00_hello_llm.py"],
+    tasks:[
+      "把 temperature 从 0 调到 1，同一问题跑 5 次，记录差异",
+      "用 tiktoken 统计一段中文的 token 数，估算一次调用成本",
+      "手工构造多轮 messages，验证不传历史模型就不记得上一句",
+      "让模型返回 JSON 并用 pydantic 校验，再故意让它返回非法 JSON"
+    ],
+    checks:[
+      "能画出「本地 → API → 响应」的数据流并标出每步传了什么",
+      "能解释为什么 Agent 需要自己维护记忆",
+      "能说出 temperature、max_tokens、上下文窗口分别影响什么"
+    ],
+    pitfalls:["把 API 当成有记忆的会话","忽略 token 成本，等到账单出来才发现循环跑了几十轮"]
+  },
+  {
+    id:2, seg:1, title:"手写 Agent 内核", weeks:"第 4–5 周", sub:"全程最关键，不要用框架代替", milestone:"M1", core:true,
+    goal:"不依赖任何框架，从零写出一个会思考、会调工具、会看结果继续思考的 Agent。",
+    concepts:["Agent = LLM + Tools + Loop + Memory","ReAct 循环","工具抽象","Observation 回流","短期记忆就是每轮重拼的 prompt","max_steps 防死循环","解析失败容错","绝不用 eval","最小权限","prompt 注入意识"],
+    files:["examples/01_react_from_scratch.py"],
+    cmds:["python examples/01_react_from_scratch.py"],
+    tasks:[
+      "通读代码，在纸上画出 agent() 循环，标出 history 在哪里变长",
+      "新增一个工具（单位换算或读取本地文本），不改循环代码就能被使用",
+      "把工具参数从纯文本改成 JSON 字符串，自己写解析与校验",
+      "故意让 MockLLM 输出不存在的工具名，观察错误如何回流给模型",
+      "把 max_steps 改成 1，再改成 10，理解上限的意义",
+      "给每轮轨迹加 JSONL 日志，能事后回放一次完整运行",
+      "配好真实模型重跑，对比 MockLLM 与真实模型在格式遵循上的差异"
+    ],
+    checks:[
+      "关掉示例文件，30 分钟内手写出能调 2 个工具的最小 Agent",
+      "能回答：第 2 轮给模型的 prompt 比第 1 轮多了什么",
+      "能说出至少 3 种 Agent 卡住或失控的原因及防护"
+    ],
+    pitfalls:["把 Agent 当成一次 API 调用","不设步数上限","工具报错直接抛异常中断整个循环","把 Observation 追加到了错误的位置"]
+  },
+  {
+    id:3, seg:1, title:"Function Calling", weeks:"第 6 周", sub:"用结构化协议替代文本正则", milestone:"M2", core:false,
+    goal:"用工业界协议替换手写文本解析，让工具调用稳定、可校验。",
+    concepts:["JSON Schema 描述工具","tool_calls 结构","tool_call_id 回填顺序","Pydantic 参数校验","并行工具调用","参数幻觉","幂等与重试"],
+    files:["examples/02_function_calling.py"],
+    cmds:["python examples/02_function_calling.py"],
+    tasks:[
+      "给 calculator 的 schema 加 enum 或数值范围约束，观察模型输出变化",
+      "用 Pydantic 定义参数模型，在 dispatch 前统一校验，失败时把错误回给模型让它改",
+      "模拟工具超时或失败，用 tenacity 实现一次自动重试",
+      "统计一次完整往返的轮数与 token 用量"
+    ],
+    checks:[
+      "能手写一份合格的工具 JSON Schema，并说清 required 的作用",
+      "能解释消息序列 assistant(tool_calls) → tool → assistant 为什么不能调换或省略"
+    ],
+    pitfalls:["忘记把 assistant 的 tool_calls 原样放回消息历史","把工具返回值直接当成最终答案"]
+  },
+  {
+    id:4, seg:1, title:"框架与编排 LangGraph", weeks:"第 7–8 周", sub:"状态、条件边、断点续跑", milestone:"M3", core:false,
+    goal:"判断什么时候该用框架，并用图式编排实现可暂停、可恢复、可人工介入的 Agent。",
+    concepts:["LangChain 1.x 的 message/tool/model 抽象","LangGraph 的 State 与 Node","Edge 与条件边","reducer add_messages","checkpointer","interrupt 人工审批","与手写版的一一对应"],
+    files:["examples/03_langgraph_agent.py"],
+    cmds:["python examples/03_langgraph_agent.py"],
+    tasks:[
+      "做一张对照表：手写版的 history / llm() / run_tool() / for 循环分别对应框架里的什么",
+      "把阶段 2 的手写 Agent 用 LangGraph 重写，功能保持一致，对比代码量与可读性",
+      "加 checkpointer，中断后重跑，验证能从断点继续",
+      "在某个敏感工具前加 interrupt，实现人工批准才执行",
+      "画出自己那张图（节点、边、循环），贴进笔记"
+    ],
+    checks:[
+      "能解释 add_messages 这个 reducer 解决了什么问题",
+      "能说清 checkpointer 把状态存在哪里、为什么能跨进程恢复",
+      "能回答什么情况下手写反而比框架更合适"
+    ],
+    pitfalls:["旧教程的 initialize_agent 在 1.x 已移除","ChatOpenAI 默认可能走 /responses，连不上 Ollama 时要设 use_responses_api=False","只学会调 API，说不出图里每条边对应手写版的哪一步"]
+  },
+  {
+    id:5, seg:2, title:"记忆与 RAG", weeks:"第 9–10 周", sub:"让 Agent 用上你自己的资料", milestone:"M4", core:false,
+    goal:"让 Agent 用上你自己的资料，并且知道它什么时候在编。",
+    concepts:["短期 / 长期 / 情景记忆","文档切分策略","embedding 与向量相似度","向量数据库","top-k","稠密 + 稀疏混合检索","重排","召回率评估","引用与幻觉约束"],
+    files:["examples/04_rag_mini.py","examples/04b_chromadb_rag.py","examples/rag_utils.py"],
+    cmds:["python examples/04_rag_mini.py","python examples/04b_chromadb_rag.py"],
+    tasks:[
+      "把自己一篇 Obsidian 笔记读进来切块，走通检索，观察不同切分长度的影响",
+      "把 alpha 分别设成 0 / 0.5 / 1，记录三种召回结果并写出结论",
+      "给 prompt 加约束：答案必须标注引用片段编号，资料没有就说不知道",
+      "按 requirements-heavy.txt 装 sentence-transformers（约 2–3 GB），替换 char_vector 后对比语义相近词",
+      "做 10 条问答的迷你评估集，算 top-2 命中率"
+    ],
+    checks:[
+      "能解释为什么哈希向量不理解语义",
+      "能说出 RAG 答错的三种典型原因：没切好 / 没召回 / 召回了但模型没用",
+      "能用数字说明一次改进是否真的有效"
+    ],
+    pitfalls:["用 tf-idf 式的词面匹配却期待语义理解","只看最终答案，不去检查召回片段","文档切得太碎，上下文全丢了"]
+  },
+  {
+    id:6, seg:2, title:"工具生态与 MCP", weeks:"第 11 周", sub:"工具写一次，处处可用", milestone:"M5", core:false,
+    goal:"把工具写成一次、处处可用的标准服务。",
+    concepts:["好工具的标准：单一职责、描述精确、可校验、幂等、超时、最小权限","MCP 的 tools / resources / prompts","stdio 与 HTTP 传输","服务端与客户端握手","N×M → N+M"],
+    files:["examples/05_mcp_server.py","examples/05_mcp_client.py"],
+    cmds:["python examples/05_mcp_client.py"],
+    tasks:[
+      "跑通客户端，逐行解释发现工具 → 调用 → 读资源的过程",
+      "把阶段 2 的三个工具改造成 MCP server，让手写 ReAct Agent 通过 MCP 调它们",
+      "加一个写文件工具，实现路径白名单加执行前确认",
+      "把这个 server 配进任意支持 MCP 的宿主，验证工具能被外部 Agent 发现"
+    ],
+    checks:[
+      "能独立写出并调通一个 MCP server",
+      "能解释 MCP 与直接 import 一个函数的本质区别"
+    ],
+    pitfalls:["本环境 mcp 2.3.0，旧教程的 FastMCP 已改名 MCPServer","工具描述含糊，模型反复选错","写操作不做权限确认"]
+  },
+  {
+    id:7, seg:2, title:"多智能体（选修）", weeks:"第 12 周", sub:"先判断该不该拆", milestone:"—", core:false,
+    goal:"判断一个任务该不该拆给多个 Agent —— 多数时候答案是不该。",
+    concepts:["角色拆分","共享状态","消息传递","监督者模式","成本 ×N 与延迟","错误传播","调试难度","smolagents 源码适合读"],
+    files:["（按需安装 requirements-heavy.txt 里的 crewai / autogen）"],
+    cmds:["python examples/01_react_from_scratch.py"],
+    tasks:[
+      "先用单 Agent + 更好的 prompt 完成一个任务",
+      "再拆成两个角色做同一任务，对比成功率、步数、token 成本",
+      "写一页结论：这个任务到底值不值得拆"
+    ],
+    checks:[
+      "能举出一个不该用多智能体的具体场景并说明理由"
+    ],
+    pitfalls:["为了「看起来高级」而上多智能体","单 Agent 都没调明白就拆分，只会放大问题","忽略成本翻倍和调试难度"]
+  },
+  {
+    id:8, seg:3, title:"评估 / 可观测 / 安全", weeks:"第 13 周", sub:"用数据证明改动有效", milestone:"—", core:false,
+    goal:"用数据证明改动有效，而不是「感觉好像变聪明了」。",
+    concepts:["黄金问答集","轨迹回放","指标：成功率 / 平均步数 / 工具出错率 / 延迟 / 成本","结构化日志与 trace id","pytest + MockLLM","prompt 注入","越权工具与路径穿越","密钥管理","输出校验与沙箱","缓存与限流"],
+    files:["examples/01_react_from_scratch.py","check_env.py"],
+    cmds:["python -m pytest"],
+    tasks:[
+      "给 Agent 写 10 个 pytest 用例，含工具失败、格式错误、超步数",
+      "给每次运行分配 trace id，把 JSONL 日志升级成可检索的轨迹",
+      "攻击演练：用恶意输入诱导 Agent 删除文件，然后加防护并验证挡住了",
+      "对比改 prompt 前后在同一评估集上的成功率"
+    ],
+    checks:[
+      "能拿出一张前后对比表，说明某次改动是变好还是变坏",
+      "能说清 prompt 注入为什么不能靠「在 prompt 里写请不要」来解决"
+    ],
+    pitfalls:["只凭感觉判断效果","把密钥硬编码进代码","只在正常路径上测试，不测工具失败"]
+  },
+  {
+    id:9, seg:3, title:"服务化与毕业作品", weeks:"第 14 周", sub:"交付别人能用的完整 Agent", milestone:"M6", core:false,
+    goal:"交付一个别人能用的完整 Agent，而不是一堆脚本。",
+    concepts:["FastAPI / uvicorn 包成 HTTP 服务","SSE 流式输出","极简 UI","配置与密钥管理","README 与架构图","复盘方法"],
+    files:["examples/mock_api_server.py","README.md","LEARNING_PATH.md"],
+    cmds:["uvicorn api:app --reload"],
+    tasks:[
+      "把 M6 包成 HTTP 服务，给出启动说明",
+      "画架构图，标出 LLM / 工具 / 循环 / 记忆 / 检索",
+      "整理评估集与一次前后对比结果",
+      "写复盘文档：3 个失败案例、成本数据、下一步想改什么"
+    ],
+    checks:[
+      "可运行的服务 + 启动说明齐全",
+      "架构图、评估集、复盘文档三件齐全",
+      "能对着 Git 历史讲清项目从 M0 到 M6 的每一次演进"
+    ],
+    pitfalls:["只交付脚本，没有启动说明","不复盘失败案例","把 .env 一起打包发出去"]
+  }
+];
+
+const MILESTONES = [
+  {tag:"M0", title:"命令行问答 bot", ability:"能配端点与模型，发一次请求并看懂响应", stage:0, week:"第 1 周", code:"projects/assistant/"},
+  {tag:"M1", title:"会调工具的 ReAct Agent", ability:"手写循环 + 两个工具 + Observation 回流", stage:2, week:"第 5 周", code:"agent.py"},
+  {tag:"M2", title:"可靠的结构化调用", ability:"Function Calling + JSONL 轨迹日志", stage:3, week:"第 6 周", code:"tools.py · trace.py"},
+  {tag:"M3", title:"可断点续跑的编排", ability:"LangGraph 状态图 + checkpointer + 人工审批", stage:4, week:"第 8 周", code:"graph.py"},
+  {tag:"M4", title:"能读你笔记的助手", ability:"本地 RAG + 混合检索 + 引用约束", stage:5, week:"第 10 周", code:"rag.py"},
+  {tag:"M5", title:"可复用的 MCP 服务", ability:"工具发布为标准服务，被外部 Agent 发现", stage:6, week:"第 11 周", code:"mcp_server.py"},
+  {tag:"M6", title:"完整毕业作品", ability:"评估集 + 安全护栏 + HTTP 服务 + 复盘", stage:9, week:"第 14 周", code:"api.py · evals/"}
+];
+
+// 每个阶段的大白话讲解：先讲「这一节到底在学什么」，再讲「为什么必须学」。
+const PLAIN = {
+  0: {what:"先把「读代码」的工具备齐：Python 基础、怎么跟网络上的服务说话、怎么管密钥。这一阶段还不用写 Agent。", why:"后面每个示例都是 Python 写的；看不懂函数和类，就容易把「知识没懂」误当成「语法不会」，卡在错误的地方。"},
+  1: {what:"搞明白一次模型调用到底传了什么、回了什么，以及它为什么什么都不记得。", why:"Agent 所有花样都建立在「模型是无状态的」这一条上；不懂这个，后面的记忆和循环都会变成死记硬背。"},
+  2: {what:"亲手把四个零件拼起来：大脑、工具、循环、记忆，做出一个会自己调工具的最小 Agent。", why:"这是全程唯一一次「没有任何黑盒」的机会。自己写过循环，才知道框架替你做了什么，出 bug 才会排。"},
+  3: {what:"把「请调用计算器」从一段自由文本，换成有固定格式的结构化请求。", why:"手写解析遇到模型换种说法就崩；工业界靠 JSON Schema 让工具调用稳定、可校验。"},
+  4: {what:"用 LangGraph 把上一阶段手写的循环，改画成一张有状态、可暂停、可恢复的图。", why:"不是学新知识，是学怎么把同一套逻辑管得更好。做一张和手写版的对照表，这节就通了。"},
+  5: {what:"让 Agent 先从你自己的资料里翻出相关片段，再照着资料回答。", why:"不这么做，模型遇到你的私人资料只能编。RAG 就是「让 Agent 有据可依」的办法。"},
+  6: {what:"把工具做成标准化服务，写一次就能被不同 Agent 发现和使用。", why:"工具散落在各个项目里会重复写很多遍；MCP 就是给工具定一个统一插座。"},
+  7: {what:"判断一个任务该不该拆给多个 Agent，并亲手对比效果与成本。", why:"多数任务一个 Agent 就够；先学会说「不该拆」，比学会拆更重要。"},
+  8: {what:"用评估集、日志和测试来证明「改了之后真的变好」，并防住恶意输入。", why:"能跑不等于能用；凭感觉调 prompt，永远不知道自己是进步还是倒退。"},
+  9: {what:"把前面写的东西包成一个别人能启动、能看懂的服务，并复盘整个过程。", why:"学完要留下一个说得清、跑得起来的作品，而不是一堆散落的脚本。"}
+};
+
+const KEY = "agent-lab-progress-v1";
+const $ = (s, r=document) => r.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+
+function loadState(){
+  try{ const raw = localStorage.getItem(KEY); if(raw) return Object.assign({done:{},tasks:{},checks:{},active:0}, JSON.parse(raw)); }
+  catch(e){}
+  return {done:{},tasks:{},checks:{},active:0};
+}
+function saveState(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+
+let state = loadState();
+let active = Number.isInteger(state.active) ? Math.min(9, Math.max(0, state.active)) : 0;
+let view = "beginner";
+
+function totalItems(){
+  let n = 0; STAGES.forEach(s => { n += s.tasks.length + s.checks.length; }); return n;
+}
+function checkedCount(){
+  return Object.values(state.tasks).filter(Boolean).length + Object.values(state.checks).filter(Boolean).length;
+}
+function doneCount(){ return STAGES.filter(s => state.done[s.id]).length; }
+
+function updateProgress(){
+  const d = doneCount();
+  $("#doneCount").textContent = d + " / 10";
+  $("#taskCount").textContent = checkedCount() + " / " + totalItems() + " 项任务与检查点";
+  $("#barFill").style.width = (d / 10 * 100) + "%";
+}
+
+function renderRoadmap(){
+  let html = "";
+  SEGMENTS.forEach((seg, si) => {
+    html += '<section class="segment"><div class="seg-head">' +
+      '<span class="seg-dot" style="background:' + seg.color + '"></span>' +
+      '<span class="seg-name">' + esc(seg.name) + '</span>' +
+      '<span class="seg-sub">' + esc(seg.sub) + '</span>' +
+      '<span class="seg-weeks">' + esc(seg.weeks) + '</span></div><div class="cards">';
+    STAGES.filter(s => s.seg === si).forEach(s => {
+      const isDone = !!state.done[s.id];
+      const flag = isDone ? '<span class="card-flag">已完成</span>'
+        : (s.core ? '<span class="card-badge">核心</span>' : '');
+      html += '<button class="stage-card' + (s.id === active ? ' active' : '') + (isDone ? ' done' : '') + (s.core ? ' core' : '') + '" data-id="' + s.id + '">' +
+        '<span class="card-top"><span class="card-num">' + s.id + '</span>' +
+        '<span class="card-weeks">' + esc(s.weeks) + '</span>' + flag + '</span>' +
+        '<span class="card-title">' + esc(s.title) + '</span>' +
+        '<span class="card-sub">' + esc(s.sub) + '</span>' +
+        '<span class="card-foot">' + (s.milestone === "—" ? "选修 / 无里程碑" : "里程碑 " + esc(s.milestone)) + ' · 点击查看</span>' +
+        '</button>';
+    });
+    html += '</div></section>';
+  });
+  $("#roadmapList").innerHTML = html;
+}
+
+function itemList(items, type, sid){
+  return '<ul class="task-list">' + items.map((t, i) => {
+    const key = type + "-" + sid + "-" + i;
+    const box = type === "t" ? state.tasks : state.checks;
+    const on = !!box[key];
+    return '<li class="' + (on ? "checked" : "") + '"><input type="checkbox" id="' + key + '" data-key="' + key + '" data-type="' + type + '"' + (on ? " checked" : "") + '>' +
+      '<label for="' + key + '">' + esc(t) + '</label></li>';
+  }).join("") + '</ul>';
+}
+
+function renderDetail(){
+  const s = STAGES[active];
+  const seg = SEGMENTS[s.seg];
+  const done = !!state.done[s.id];
+  const prev = active > 0 ? '<button class="btn" data-nav="' + (active-1) + '">← 上一阶段</button>' : '<span></span>';
+  const next = active < 9 ? '<button class="btn" data-nav="' + (active+1) + '">下一阶段 →</button>' : '<span></span>';
+
+  let html = '<div class="detail-scroll">' +
+    '<button class="back" id="backBtn">← 返回路线</button>' +
+    '<span class="kicker">阶段 ' + s.id + ' · ' + esc(seg.name) + ' · ' + esc(s.weeks) + '</span>' +
+    '<h2>' + esc(s.title) + (s.core ? ' <span class="card-badge">核心</span>' : '') + '</h2>' +
+    '<p class="goal"><b>学完你能：</b>' + esc(s.goal) + '</p>' +
+    (PLAIN[s.id] ? '<div class="plain-box"><div class="plain-t">这一阶段在讲什么（大白话）</div>' +
+      '<p>' + esc(PLAIN[s.id].what) + '</p>' +
+      '<p class="plain-why"><b>为什么要学：</b>' + esc(PLAIN[s.id].why) + '</p>' +
+      '<button class="btn small" data-beginner-go="beginner">读完整白话讲解 →</button></div>' : '') +
+    '<div class="detail-actions">' +
+      '<button class="btn ' + (done ? "" : "primary") + '" id="toggleDone">' + (done ? "✓ 已完成 · 点击取消" : "标记本阶段完成") + '</button>' +
+      '<button class="btn small" data-copy="' + esc(s.cmds[0]) + '">复制运行命令</button>' +
+    '</div>';
+
+  html += '<div class="sec"><h3>要理解的概念 <span class="tag knowledge">这是知识</span></h3><div class="chips">' +
+    s.concepts.map(c => '<span class="chip">' + esc(c) + '</span>').join("") + '</div></div>';
+
+  html += '<div class="sec"><h3>在本仓库跑什么 <span class="tag code">代码只是例子</span></h3>';
+  s.files.forEach(f => {
+    const canOpen = /^(examples|notebooks)\//.test(f) || /\.(py|md|txt|ipynb|log)$/.test(f);
+    const viewBtn = canOpen ? '<button class="copy" data-open-file="' + esc(f) + '">查看</button>' : '';
+    html += '<div class="code-row"><span class="code-txt">' + esc(f) + '</span>' + viewBtn + '<button class="copy" data-copy="' + esc(f) + '">复制</button></div>';
+  });
+  s.cmds.forEach(c => { html += '<div class="code-row"><span class="code-txt">' + esc(c) + '</span><button class="copy" data-copy="' + esc(c) + '">复制</button></div>'; });
+  html += '</div>';
+
+  html += '<div class="sec"><h3>动手任务 <span class="tag code">动手验证，不是知识</span></h3>' + itemList(s.tasks, "t", s.id) + '</div>';
+  html += '<div class="sec ok"><h3>通过标准（能全部打勾再往下走）</h3>' + itemList(s.checks, "c", s.id) + '</div>';
+  html += '<div class="sec warn"><h3>常见坑</h3><ul class="warn-list">' +
+    s.pitfalls.map(p => '<li>' + esc(p) + '</li>').join("") + '</ul></div>';
+  html += '<div class="hint">按 ← → 可快速切换阶段 · 勾选会自动保存</div></div>';
+  html += '<div class="detail-nav">' + prev + next + '</div>';
+
+  $("#detail").innerHTML = html;
+}
+
+function renderMilestones(){
+  $("#milestoneList").innerHTML = MILESTONES.map(m =>
+    '<button class="m-card" data-stage="' + m.stage + '">' +
+      '<span class="m-tag">' + esc(m.tag) + '</span>' +
+      '<span class="m-title">' + esc(m.title) + '</span>' +
+      '<span class="m-ability">' + esc(m.ability) + '</span>' +
+      '<span class="m-foot">' + esc(m.week) + ' · ' + esc(m.code) + ' · 点击查看阶段 ' + m.stage + ' →</span>' +
+    '</button>'
+  ).join("");
+}
+
+function selectStage(id, openMobile){
+  active = Math.min(9, Math.max(0, Number(id)));
+  state.active = active; saveState();
+  if(view !== "roadmap") switchView("roadmap");
+  renderRoadmap(); renderDetail();
+  if(openMobile && window.matchMedia("(max-width:900px)").matches){
+    $("#detail").classList.add("open"); document.body.classList.add("no-scroll");
+  }
+  const card = document.querySelector('.stage-card[data-id="' + active + '"]');
+  if(card && window.matchMedia("(min-width:901px)").matches) card.scrollIntoView({block:"nearest", behavior:"smooth"});
+  $("#detail").querySelector(".detail-scroll").scrollTop = 0;
+}
+
+function closeMobile(){
+  $("#detail").classList.remove("open"); document.body.classList.remove("no-scroll");
+}
+
+function switchView(v){
+  view = v;
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.view === v));
+  ["beginner","roadmap","milestones","guide","library","playground"].forEach(name => {
+    const el = $("#view-" + name);
+    if(!el) return;
+    if(name === "roadmap") el.style.display = (v === "roadmap" ? "grid" : "none");
+    else el.classList.toggle("show", v === name);
+  });
+  const banner = $("#startBanner");
+  if(banner) banner.style.display = (v === "beginner" ? "none" : "flex");
+  if(v !== "roadmap") closeMobile();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+let toastTimer;
+function toast(msg){
+  const el = $("#toast"); el.textContent = msg; el.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 1600);
+}
+async function copyText(text){
+  try{ if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(text); return true; } }catch(e){}
+  try{
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand("copy"); ta.remove(); return ok;
+  }catch(e){ return false; }
+}
+
+document.addEventListener("click", async (e) => {
+  const card = e.target.closest(".stage-card");
+  if(card){ selectStage(card.dataset.id, true); return; }
+
+  const nav = e.target.closest("[data-nav]");
+  if(nav){ selectStage(nav.dataset.nav, false); return; }
+
+  const tab = e.target.closest(".tab");
+  if(tab){ switchView(tab.dataset.view); return; }
+
+  const m = e.target.closest(".m-card");
+  if(m){ selectStage(m.dataset.stage, true); return; }
+
+  if(e.target.closest("#backBtn")){ closeMobile(); return; }
+  if(e.target.closest("#toggleDone")){
+    state.done[active] = !state.done[active]; saveState();
+    renderRoadmap(); renderDetail(); updateProgress();
+    toast(state.done[active] ? "已完成阶段 " + active : "已取消完成状态");
+    return;
+  }
+  if(e.target.closest("#continueBtn")){
+    const nextStage = STAGES.find(s => !state.done[s.id]);
+    selectStage(nextStage ? nextStage.id : 0, true);
+    toast(nextStage ? "继续阶段 " + nextStage.id + "：" + nextStage.title : "十个阶段都完成了，去做毕业作品吧");
+    return;
+  }
+  if(e.target.closest("#resetBtn")){
+    if(confirm("确定清空所有勾选和完成记录吗？此操作不可撤销。")){
+      state = {done:{},tasks:{},checks:{},active:active}; saveState();
+      renderRoadmap(); renderDetail(); updateProgress(); toast("进度已重置");
+    }
+    return;
+  }
+  const cp = e.target.closest("[data-copy]");
+  if(cp){ toast(await copyText(cp.dataset.copy) ? "已复制：" + cp.dataset.copy : "复制失败，请手动选中"); return; }
+});
+
+document.addEventListener("change", (e) => {
+  const el = e.target;
+  if(el.tagName !== "INPUT" || !el.dataset.type) return;
+  const box = el.dataset.type === "t" ? state.tasks : state.checks;
+  box[el.dataset.key] = el.checked;
+  el.closest("li").classList.toggle("checked", el.checked);
+  saveState(); updateProgress();
+});
+
+document.addEventListener("keydown", (e) => {
+  if(e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  if(e.key === "Escape"){ closeMobile(); return; }
+  if(view !== "roadmap") return;
+  if(e.key === "ArrowRight"){ selectStage(active + 1, false); }
+  if(e.key === "ArrowLeft"){ selectStage(active - 1, false); }
+});
+
+renderRoadmap();
+renderDetail();
+renderMilestones();
+updateProgress();
+switchView("beginner");
+</script>
+<script src="library.js"></script>
+<script src="beginner.js"></script>
+<script src="app-library.js"></script>
+</body>
+</html>

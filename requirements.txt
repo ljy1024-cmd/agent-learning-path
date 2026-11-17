@@ -1,0 +1,31 @@
+# AI Agent 学习环境 - 主依赖（Python 3.13）
+# 安装：.venv\Scripts\python.exe -m pip install -r requirements.txt
+
+# 1) 基础层：调用任意大模型 + 手写 Agent 所需的积木
+openai>=1.60            # OpenAI 兼容协议：DeepSeek / 通义 / 智谱 / Ollama / vLLM 都能接
+python-dotenv>=1.0      # 用 .env 管理密钥
+pydantic>=2.7           # 结构化输出 / 工具参数校验
+httpx>=0.27             # HTTP 客户端（openai SDK 底层依赖）
+rich>=13                # 终端彩色输出，方便观察 Agent 轨迹
+tenacity>=8             # 调用失败自动重试
+tiktoken>=0.7           # token 计数与成本估算
+pytest>=8               # 给 Agent 写测试
+
+# 2) 主流 Agent 框架层
+langchain>=1.0          # 生态与抽象（LCEL / tools / messages）
+langchain-openai>=1.0   # LangChain 的模型适配器
+langgraph>=0.2          # 图式编排：有状态、可循环、可回溯的 Agent
+mcp>=1.0                # Model Context Protocol，工具/资源的标准协议
+smolagents>=1.0         # HuggingFace 的极简 Agent，源码短、适合读原理
+
+# 3) RAG / 记忆 / 工具层
+chromadb>=0.5           # 本地向量数据库
+rank-bm25>=0.2          # 关键词检索基线（和向量检索做混合）
+beautifulsoup4>=4.12    # 网页解析
+ddgs>=6                 # 免费联网搜索工具（无需 API Key）
+fastapi>=0.110          # 把 Agent 包成 HTTP 服务
+uvicorn>=0.30           # ASGI 服务器
+
+# 4) 交互式学习环境
+jupyterlab>=4           # 分步骤运行、观察中间结果
+ipykernel>=6            # 让 Jupyter 使用本虚拟环境

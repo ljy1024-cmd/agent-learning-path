@@ -1,0 +1,23 @@
+# 可选的重型依赖：默认不装（体积数 GB / 与部分环境冲突）
+# 学到对应章节时再单独安装，命令：
+#   .venv\Scripts\python.exe -m pip install -r requirements-heavy.txt
+#
+# 建议按需逐个安装，不要一次全装。
+
+# --- 本地语义向量（做真正离线的 RAG 时才需要，torch 约 2~3 GB）---
+# torch>=2.5
+# sentence-transformers>=3.0
+# transformers>=4.45
+
+# --- 多智能体框架（比手写示例重，API 变动快）---
+# crewai>=0.80
+# autogen-agentchat>=0.4
+
+# --- 可视化 UI / 可观测性 ---
+# gradio>=5
+# streamlit>=1.40
+# langfuse>=2
+# opik>=1
+
+# --- 本地大模型运行时（注意：Ollama 本体是独立桌面程序，不是 pip 包）---
+# ollama>=0.4     # 仅 Python 客户端；软件本体请从 ollama.com 下载
